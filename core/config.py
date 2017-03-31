@@ -1,0 +1,2 @@
+lang = "fi"
+debug = False
