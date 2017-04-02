@@ -12,9 +12,12 @@ def test():
 	print(data)
 
 def get(revid, model="reverted"):
-	url = "https://ores.wikimedia.org/scores/fiwiki?revids="+revid+"&models="+model
-	data = json.load(urlopen(url))
-	if core.config.debug:
-		print(data[revid][model]["probability"])
+	try:
+		url = "https://ores.wikimedia.org/scores/fiwiki?revids="+revid+"&models="+model
+		data = json.load(urlopen(url))
+		if core.config.debug:
+			print(data[revid][model]["probability"])
 
-	return data[revid][model]["probability"]["false"], data[revid][model]["probability"]["true"], 
+		return data[revid][model]["probability"]["false"], data[revid][model]["probability"]["true"],
+	except KeyError:
+		return False

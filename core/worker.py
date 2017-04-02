@@ -2,8 +2,10 @@
 # Import python modules
 import datetime
 import time
+import subprocess
 
 # Import core modules
+import core.config
 from core import ores_api
 
 # Import pywikibot
@@ -11,9 +13,7 @@ import pywikibot
 from pywikibot import pagegenerators
 
 class Worker:
-	limit = 100
 	counter = 0
-	checked = []
 
 	def run(self):
 		try:
@@ -22,16 +22,22 @@ class Worker:
 			site = pywikibot.Site()
 			print(timenow-oldtime)
 			gen = pagegenerators.RecentChangesPageGenerator(start=timenow, end=timenow-oldtime)
-			print("now checking")
+			print("now checking...")
 
 			for page in gen:
-				if self.counter >= self.limit:
+				if self.counter >= core.config.first_scan:
 					break
-				if page.exists() and not any(page.title() == s for s in self.checked):
+				if page.exists():
+					response = ores_api.get(str(page.latest_revision_id))
 
-					print(ores_api.get(str(page.latest_revision_id)), end=" ")
-					print("https://fi.wikipedia.org/w/index.php?title="+page.title().replace(" ", "_")+"&diff="+str(page.latest_revision_id))
-					self.checked.append(page.title())
+					if not response:
+						continue
+
+					print("checking:", page.title(), str(page.latest_revision_id))
+					if core.config.max_false >= response[0] and core.config.min_true <= response[1]:
+						subprocess.Popen(['notify-send', "possibly found vandalism"])
+						print(response, end=" ")
+						print("https://fi.wikipedia.org/w/index.php?title="+page.title().replace(" ", "_")+"&diff="+str(page.latest_revision_id))
 
 					self.counter += 1
 
