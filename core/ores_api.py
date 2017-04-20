@@ -14,6 +14,7 @@ def test():
 def get(revid, model="reverted"):
 	try:
 		url = "https://ores.wikimedia.org/scores/fiwiki?revids="+revid+"&models="+model
+		print(url)
 		data = json.load(urlopen(url))
 		if core.config.debug:
 			print(data[revid][model]["probability"])
